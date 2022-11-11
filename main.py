@@ -14,24 +14,35 @@ class HelloWorld(flask_restful.Resource):
         id = json_data['id']
         judul = json_data['judul']
         deskripsi = json_data['deskripsi']
+        jenis = json_data['jenis']
 
-        mytext = judul+" "+deskripsi
+        if jenis == 'meher':
+            filename = "meher-"+id+".mp3"
+        elif jenis == 'woirata':
+            filename = "woirata-"+id+".mp3"
+        else:
+            filename = "file-"+id+".mp3"
 
-        language = 'id'
-        myobj = gTTS(text=mytext, lang=language, slow=False)
-        filename = "file-"+id+".mp3"
-        try:
-            os.remove("static/"+filename)
-        except OSError:
-            pass
-        myobj.save(filename)
+        pathFilename = 'static/'+filename
+        hasil = os.path.isfile(pathFilename)
 
-        shutil.move(filename, "static/"+filename)
+        if hasil :
+            file = os.path.join("/static", filename)
+        else:
+            mytext = judul+" "+deskripsi
 
-        file = os.path.join("/static", filename)
-        return flask.jsonify(id=id, judul=judul, deskripsi=deskripsi, file=file)
+            language = 'id'
+
+            myobj = gTTS(text=mytext, lang=language, slow=False)
+            myobj.save(filename)
+
+            shutil.move(filename, "static/"+filename)
+
+            file = os.path.join("/static", filename)
+
+        return flask.jsonify(file=file)
 
 api.add_resource(HelloWorld, '/')
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='127.0.0.1',port=5050)
